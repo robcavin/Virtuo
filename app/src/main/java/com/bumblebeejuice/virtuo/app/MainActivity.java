@@ -385,15 +385,15 @@ public class MainActivity extends Activity implements SensorEventListener, Textu
     public void onSensorChanged(SensorEvent event) {
 
         if (sphereFilterProgram != null) {
-            Log.d("VIRTUO SENSOR",String.format("%f %f %f %f",event.values[0],event.values[1],event.values[2],event.values[3]));
+            Log.d("VIRTUO SENSOR",String.format("%f %f %f %f %f",event.values[0],event.values[1],event.values[2],event.values[3], event.values[4]));
             float[] rotationMatrix = new float[16];
             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
             SensorManager.remapCoordinateSystem(rotationMatrix,
-                    SensorManager.AXIS_Z, SensorManager.AXIS_X,
+                    SensorManager.AXIS_Z, SensorManager.AXIS_MINUS_X,
                     rotationMatrix);
 
             SensorManager.remapCoordinateSystem(rotationMatrix,
-                    SensorManager.AXIS_X, SensorManager.AXIS_Z,
+                    SensorManager.AXIS_X, SensorManager.AXIS_MINUS_Z,
                     rotationMatrix);
 
             Matrix.rotateM(rotationMatrix,0,-90,1,0,0);
