@@ -62,6 +62,7 @@ public class LTRenderer {
     }
 
     private EGLSurface _mEGLSurface;
+    private EGLSurface _pendingEGLSurface;
 
     private LTFilterProgram _filterProgram;
 
@@ -229,17 +230,17 @@ public class LTRenderer {
     }
 
 
-    public void setTextureScaleAndCrop(Point outputSurfaceSize, Point inputSurfaceSize) {
-        setTextureScaleAndCrop(outputSurfaceSize, inputSurfaceSize, false, false);
+    public void setTextureScaleAndCrop(Point outputSurfaceSize, Point inputSurfaceSize, float scale) {
+        setTextureScaleAndCrop(outputSurfaceSize, inputSurfaceSize, scale, false, false);
     }
 
-    public void setTextureScaleAndCrop(Point outputSurfaceSize, Point inputSurfaceSize, boolean flipVertical, boolean flipHorizontal) {
+    public void setTextureScaleAndCrop(Point outputSurfaceSize, Point inputSurfaceSize, float scale, boolean flipVertical, boolean flipHorizontal) {
 
         double width_scale = 1.0 * outputSurfaceSize.x / inputSurfaceSize.x;
         double height_scale = 1.0 * outputSurfaceSize.y / inputSurfaceSize.y;
 
-        double scale = Math.max(width_scale, height_scale);
-        Point normalizedInputSize = new Point((int) (inputSurfaceSize.x * scale), (int) (inputSurfaceSize.y * scale));
+        double aspect_scale = Math.max(width_scale, height_scale);
+        Point normalizedInputSize = new Point((int) (inputSurfaceSize.x * aspect_scale), (int) (inputSurfaceSize.y * aspect_scale));
 
         float width_scaling = 1.0f * normalizedInputSize.x / outputSurfaceSize.x;
         float height_scaling = 1.0f * normalizedInputSize.y / outputSurfaceSize.y;
@@ -248,7 +249,7 @@ public class LTRenderer {
         if (flipHorizontal) width_scaling = -width_scaling;
 
         Matrix.setIdentityM(_projMatrix, 0);
-        Matrix.scaleM(_projMatrix, 0, width_scaling, height_scaling, 1);
+        Matrix.scaleM(_projMatrix, 0, (scale * width_scaling), (scale * height_scaling), 1);
     }
 
 

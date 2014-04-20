@@ -1,12 +1,18 @@
 package com.bumblebeejuice.virtuo.app;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -18,14 +24,33 @@ import android.view.View;
 import java.nio.ByteBuffer;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements SensorEventListener, TextureView.SurfaceTextureListener {
 
-    TextureView textureView;
-    Surface surface;
-    Point surfaceSize;
+    final private Object textureViewSurfaceAvailableSync = new Object();
 
-    LTRenderer renderer;
-    Surface rendererSurface;
+    private TextureView textureView;
+    private Surface textureViewSurface;
+    private Point textureViewSurfaceSize;
+
+    private LTRenderer renderer;
+    private Surface rendererSurface;
+
+    private MediaExtractor extractor;
+    private MediaCodec decoder;
+
+    private Thread feeder;
+    private Thread player;
+
+    private SensorManager sensorManager;
+    private Sensor sensor;
+
+    private LTSphereFilterProgram sphereFilterProgram;
+
+    // For Gyro
+    private static final float NS2S = 1.0f / 1000000000.0f;
+    private final float[] deltaRotationVector = new float[4];
+    private float timestamp;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,34 +62,16 @@ public class MainActivity extends Activity {
         View rootView = findViewById(R.id.rootView);
         rootView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                View.SYSTEM_UI_FLAG_FULLSCREEN |
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                        View.SYSTEM_UI_FLAG_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        );
 
 
         textureView = (TextureView) findViewById(R.id.textureView);
-        textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
-            @Override
-            public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-                surface = new Surface(surfaceTexture);
-                surfaceSize = new Point(width,height);
-                playMovie();
-            }
+        textureView.setSurfaceTextureListener(this);
 
-            @Override
-            public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
-            }
-
-            @Override
-            public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-                return true;
-            }
-
-            @Override
-            public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-
-            }
-        });
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
 
@@ -88,21 +95,132 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+
+        synchronized (textureViewSurfaceAvailableSync) {
+            if (textureViewSurface != null) {
+                playMovie();
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+
+        tearDown();
+    }
+
+
+    private void tearDown() {
+        // Start winding down the renderer
+        if (feeder != null) {
+            feeder.interrupt();
+            try {
+                feeder.join();
+            } catch (InterruptedException e) {
+                LTErrorHandler.handleException(e);
+            }
+            feeder = null;
+        }
+
+        if (player != null) {
+            player.interrupt();
+            try {
+                player.join();
+            } catch (InterruptedException e) {
+                LTErrorHandler.handleException(e);
+            }
+            player = null;
+        }
+
+        if (decoder != null) {
+            decoder.stop();
+            decoder.release();
+            decoder = null;
+        }
+
+        if (extractor != null) {
+            extractor.release();
+            extractor = null;
+        }
+
+        if (rendererSurface != null) {
+            rendererSurface.release();
+            rendererSurface = null;
+        }
+
+        if (renderer != null) {
+            renderer.release();
+            renderer = null;
+        }
+
+        // Released by renderer, but we also need to release reference
+        sphereFilterProgram = null;
+
+        if (textureViewSurface != null) {
+            textureViewSurface.release();
+            textureViewSurface = null;
+        }
+    }
+
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
+
+        synchronized (textureViewSurfaceAvailableSync) {
+            textureViewSurface = new Surface(surfaceTexture);
+        }
+
+        textureViewSurfaceSize = new Point(width, height);
+        playMovie();
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+
+
+        return true;
+    }
+
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+    }
+
+
     protected void playMovie() {
 
         renderer = new LTRenderer();
-        renderer.setOutputSurface(surface);
+        renderer.setOutputSurface(textureViewSurface);
         renderer.getInputSurfaceTexture(new LTRenderer.OnSurfaceTextureAvailableListener() {
             @Override
             public void surfaceTextureAvailable(SurfaceTexture surfaceTexture, int surfaceTextureId) {
                 surfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
                     @Override
                     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-                        renderer.renderOnce();
+                        if (renderer != null) {
+                            renderer.renderOnce();
+                        }
                     }
                 });
                 rendererSurface = new Surface(surfaceTexture);
-                renderer.setFilterProgram(new LTSphereFilterProgram());
+
+                sphereFilterProgram = new LTSphereFilterProgram();
+                renderer.setFilterProgram(sphereFilterProgram);
+
+                renderer.setIgnoreInputSurfaceTexMatrix(true);
                 playMovie(renderer);
             }
         });
@@ -130,6 +248,7 @@ public class MainActivity extends Activity {
         });
     }
 
+
     protected void playMovie(final LTRenderer renderer) {
 
         MediaExtractor extractor = null;
@@ -144,6 +263,7 @@ public class MainActivity extends Activity {
             MediaFormat format = extractor.getTrackFormat(0);
             decoder = MediaCodec.createDecoderByType(format.getString(MediaFormat.KEY_MIME));
 
+            renderer.setTextureScaleAndCrop(textureViewSurfaceSize, new Point(format.getInteger("width") / 2, format.getInteger("height")), 2);
             decoder.configure(format, rendererSurface, null, 0);
             decoder.start();
 
@@ -153,7 +273,7 @@ public class MainActivity extends Activity {
             final MediaExtractor fExtractor = extractor;
 
             // Feeder thread
-            Thread feeder = new Thread() {
+            feeder = new Thread() {
 
                 @Override
                 public void run() {
@@ -180,10 +300,13 @@ public class MainActivity extends Activity {
 
                                 fExtractor.advance();
                             } else {
+                                // To play once...
                                 // End of stream -- send empty frame with EOS flag set.
                                     /*fDecoder.queueInputBuffer(inputBufIndex, 0, 0, 0L,
                                             MediaCodec.BUFFER_FLAG_END_OF_STREAM);
                                     inputDone = true;*/
+
+                                // To repeat...
                                 fExtractor.seekTo(0, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
                             }
                         }
@@ -194,12 +317,12 @@ public class MainActivity extends Activity {
             feeder.start();
 
 
-            Thread player = new Thread() {
+            player = new Thread() {
                 @Override
                 public void run() {
 
                     String TAG = "VIRTUO";
-                    boolean VERBOSE = false;
+                    boolean VERBOSE = true;
                     MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
 
                     boolean outputDone = false;
@@ -222,7 +345,7 @@ public class MainActivity extends Activity {
                             LTErrorHandler.handleException(new Exception("unexpected result from decoder.dequeueOutputBuffer: " + decoderStatus));
                         } else { // decoderStatus >= 0
                             if (VERBOSE)
-                                Log.d(TAG, "surface decoder given buffer " + decoderStatus +
+                                Log.d(TAG, "textureViewSurface decoder given buffer " + decoderStatus +
                                         " (size=" + info.size + ")");
                             if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                                 if (VERBOSE) Log.d(TAG, "output EOS");
@@ -257,4 +380,31 @@ public class MainActivity extends Activity {
 
         }
     }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
+        if (sphereFilterProgram != null) {
+            Log.d("VIRTUO SENSOR",String.format("%f %f %f %f",event.values[0],event.values[1],event.values[2],event.values[3]));
+            float[] rotationMatrix = new float[16];
+            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+            SensorManager.remapCoordinateSystem(rotationMatrix,
+                    SensorManager.AXIS_Z, SensorManager.AXIS_X,
+                    rotationMatrix);
+
+            SensorManager.remapCoordinateSystem(rotationMatrix,
+                    SensorManager.AXIS_X, SensorManager.AXIS_Z,
+                    rotationMatrix);
+
+            Matrix.rotateM(rotationMatrix,0,-90,1,0,0);
+            sphereFilterProgram.setRotationMatrix(rotationMatrix);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+
 }
