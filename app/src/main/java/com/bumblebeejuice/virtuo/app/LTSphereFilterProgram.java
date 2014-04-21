@@ -36,7 +36,7 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 ByteBuffer.allocateDirect(vertexCount * 5 * 4)
                         .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
-        float x, y, z;
+        float x, y, z, u, v;
 
         for (double b = 90; b <= 180 - space; b += space) {
             for (double a = 0; a <= 360 - space; a += space) {
@@ -44,34 +44,51 @@ public class LTSphereFilterProgram extends LTFilterProgram {
 
                 x = (float) (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
                 y = (float) (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                z = (float) (R * Math.cos((b) / 180 * Math.PI));
                 vertices.put(x - H);
                 vertices.put(y + K);
-                vertices.put((float) (R * Math.cos((b) / 180 * Math.PI) - Z));
-                vertices.put((x + 1) / 4);
+                vertices.put(z - Z);
+
+                u = (x + 1) / 4 + 0.25f;
+                v = (y + 1) / 2;
+                //u = (z  > 0) ? ((x < 0) ? 0.5f - u : 0.5f + u) : u;
+                vertices.put(u);
                 vertices.put((y + 1) / 2);
 
-                x = (float) (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI) - H);
-                y = (float) (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI) + K);
-                vertices.put(x);
-                vertices.put(y);
-                vertices.put((float) (R * Math.cos((b + space) / 180 * Math.PI) - Z));
-                vertices.put((x + 1) / 4);
+                x = (float) (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                y = (float) (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                z = (float) (R * Math.cos((b + space) / 180 * Math.PI));
+                vertices.put(x - H);
+                vertices.put(y + K);
+                vertices.put(z - Z);
+
+                u = (x + 1) / 4 + 0.25f;
+                //u = (z  > 0) ? ((x < 0) ? 0.5f - u : 0.5f + u) : u;
+                vertices.put(u);
                 vertices.put((y + 1) / 2);
 
-                x = (float) (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI) - H);
-                y = (float) (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI) + K);
-                vertices.put(x);
-                vertices.put(y);
-                vertices.put((float) (R * Math.cos((b) / 180 * Math.PI) - Z));
-                vertices.put((x + 1) / 4);
+                x = (float) (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                y = (float) (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                z = (float) (R * Math.cos((b) / 180 * Math.PI));
+                vertices.put(x - H);
+                vertices.put(y + K);
+                vertices.put(z - Z);
+
+                u = (x + 1) / 4 + 0.25f;
+                //u = (z  > 0) ? ((x < 0) ? 0.5f - u : 0.5f + u) : u;
+                vertices.put(u);
                 vertices.put((y + 1) / 2);
 
-                x = (float) (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI) - H);
-                y = (float) (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI) + K);
-                vertices.put(x);
-                vertices.put(y);
-                vertices.put((float) (R * Math.cos((b + space) / 180 * Math.PI) - Z));
-                vertices.put((x + 1) / 4);
+                x = (float) (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                y = (float) (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                z = (float) (R * Math.cos((b + space) / 180 * Math.PI));
+                vertices.put(x - H);
+                vertices.put(y + K);
+                vertices.put(z - Z);
+
+                u = (x + 1) / 4 + 0.25f;
+                //u = (z  > 0) ? ((x < 0) ? 0.5f - u : 0.5f + u) : u;
+                vertices.put(u);
                 vertices.put((y + 1) / 2);
             }
         }
