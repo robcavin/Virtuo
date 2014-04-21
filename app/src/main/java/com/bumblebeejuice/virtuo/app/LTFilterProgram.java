@@ -239,6 +239,8 @@ public class LTFilterProgram {
 
         updateUniforms(mMVPMatrix, mSTMatrix);
 
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
+
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, mTriangleVertices.capacity() / 5);
         checkGlError("glDrawArrays");
     }
