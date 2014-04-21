@@ -38,7 +38,7 @@ public class LTSphereFilterProgram extends LTFilterProgram {
 
         float x, y, z;
 
-        for (double b = -90; b <= 0 - space; b += space) {
+        for (double b = 90; b <= 180 - space; b += space) {
             for (double a = 0; a <= 360 - space; a += space) {
 
 

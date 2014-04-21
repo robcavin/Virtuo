@@ -396,7 +396,7 @@ public class MainActivity extends Activity implements SensorEventListener, Textu
                     SensorManager.AXIS_X, SensorManager.AXIS_MINUS_Z,
                     rotationMatrix);
 
-            Matrix.rotateM(rotationMatrix,0,-90,1,0,0);
+            Matrix.rotateM(rotationMatrix,0,90,1,0,0);
             sphereFilterProgram.setRotationMatrix(rotationMatrix);
         }
     }
