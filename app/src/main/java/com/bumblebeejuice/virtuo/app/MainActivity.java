@@ -68,7 +68,8 @@ public class MainActivity extends Activity implements SensorEventListener, Textu
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getActionBar().hide();
+        if (getActionBar() != null)
+            getActionBar().hide();
 
         View rootView = findViewById(R.id.rootView);
         rootView.setSystemUiVisibility(
