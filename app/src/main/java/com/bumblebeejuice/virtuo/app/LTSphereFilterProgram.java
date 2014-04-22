@@ -108,6 +108,9 @@ public class LTSphereFilterProgram extends LTFilterProgram {
 
 
         boolean first = true;
+
+        // NOTE - reversed z ordering to wind in opposite direction, since we need 3 verts to
+        //  generate the 0 area triangle which itself reverses ordering
         for (double b = 90; b >= space; b -= space) {
             for (double a = 0; a <= 360 - space; a += space) {
 

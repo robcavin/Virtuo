@@ -2,19 +2,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bumblebeejuice.virtuo.app" >
 
+    <uses-permission android:name="android.permission.INTERNET">
+
+    </uses-permission>
     <application
-        android:name=".Virtuo"
+        android:name="com.bumblebeejuice.virtuo.app.Virtuo"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:screenOrientation="landscape"
-            android:name="com.bumblebeejuice.virtuo.app.MainActivity"
-            android:label="@string/app_name" >
+            android:name=".PlayerActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape" >
+        </activity>
+        <activity
+            android:name="com.bumblebeejuice.virtuo.app.PickActivity"
+            android:screenOrientation="portrait"
+            android:label="Virtuo" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
