@@ -38,6 +38,8 @@ public class LTSphereFilterProgram extends LTFilterProgram {
 
         float x, y, z, u, v;
 
+        float epsilon = 0.00001f;
+
         for (double b = 90; b <= 180 - space; b += space) {
             for (double a = 0; a <= 360 - space; a += space) {
 
@@ -49,11 +51,11 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 vertices.put(y + K);
                 vertices.put(z - Z);
 
-                u = (x + 1) / 4 + 0.25f;
+                u = (float) (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
+                u = (u + 1) / 4;
                 v = (y + 1) / 2;
-                //u = (z  > 0) ? ((x < 0) ? 0.5f - u : 0.5f + u) : u;
                 vertices.put(u);
-                vertices.put((y + 1) / 2);
+                vertices.put(v);
 
                 x = (float) (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
                 y = (float) (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
@@ -62,10 +64,11 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 vertices.put(y + K);
                 vertices.put(z - Z);
 
-                u = (x + 1) / 4 + 0.25f;
-                //u = (z  > 0) ? ((x < 0) ? 0.5f - u : 0.5f + u) : u;
+                u = (float) (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
+                u = (u + 1) / 4;
+                v = (y + 1) / 2;
                 vertices.put(u);
-                vertices.put((y + 1) / 2);
+                vertices.put(v);
 
                 x = (float) (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
                 y = (float) (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
@@ -74,10 +77,11 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 vertices.put(y + K);
                 vertices.put(z - Z);
 
-                u = (x + 1) / 4 + 0.25f;
-                //u = (z  > 0) ? ((x < 0) ? 0.5f - u : 0.5f + u) : u;
+                u = (float) (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
+                u = (u + 1) / 4;
+                v = (y + 1) / 2;
                 vertices.put(u);
-                vertices.put((y + 1) / 2);
+                vertices.put(v);
 
                 x = (float) (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
                 y = (float) (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
@@ -86,10 +90,11 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 vertices.put(y + K);
                 vertices.put(z - Z);
 
-                u = (x + 1) / 4 + 0.25f;
-                //u = (z  > 0) ? ((x < 0) ? 0.5f - u : 0.5f + u) : u;
+                u = (float) (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
+                u = (u + 1) / 4;
+                v = (y + 1) / 2;
                 vertices.put(u);
-                vertices.put((y + 1) / 2);
+                vertices.put(v);
             }
         }
 
