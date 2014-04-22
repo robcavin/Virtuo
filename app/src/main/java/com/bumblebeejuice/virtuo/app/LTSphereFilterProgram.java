@@ -29,72 +29,156 @@ public class LTSphereFilterProgram extends LTFilterProgram {
         float K = 0;
         float Z = 0;
 
-        final int space = 10;
-        final int vertexCount = (90 / space) * (360 / space) * 4;
+        final int space = 5;
+        final int vertexCount = (180 / space) * (360 / space) * 4 + 3;
 
         FloatBuffer vertices =
                 ByteBuffer.allocateDirect(vertexCount * 5 * 4)
                         .order(ByteOrder.nativeOrder()).asFloatBuffer();
 
-        float x, y, z, u, v;
+        double x = 0, y = 0, z = 0, u = 0, v = 0;
 
-        float epsilon = 0.00001f;
+        double epsilon = 0.0000001f;
 
         for (double b = 90; b <= 180 - space; b += space) {
             for (double a = 0; a <= 360 - space; a += space) {
 
 
-                x = (float) (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                y = (float) (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                z = (float) (R * Math.cos((b) / 180 * Math.PI));
-                vertices.put(x - H);
-                vertices.put(y + K);
-                vertices.put(z - Z);
+                x = (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                y = (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                z = (R * Math.cos((b) / 180 * Math.PI));
+                vertices.put((float) (x - H));
+                vertices.put((float) (y + K));
+                vertices.put((float) (z - Z));
 
-                u = (float) (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
+                u = (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4;
                 v = (y + 1) / 2;
-                vertices.put(u);
-                vertices.put(v);
+                vertices.put((float) u);
+                vertices.put((float) v);
 
-                x = (float) (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
-                y = (float) (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
-                z = (float) (R * Math.cos((b + space) / 180 * Math.PI));
-                vertices.put(x - H);
-                vertices.put(y + K);
-                vertices.put(z - Z);
+                x = (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                y = (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                z = (R * Math.cos((b + space) / 180 * Math.PI));
+                vertices.put((float) (x - H));
+                vertices.put((float) (y + K));
+                vertices.put((float) (z - Z));
 
-                u = (float) (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
+                u = (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4;
                 v = (y + 1) / 2;
-                vertices.put(u);
-                vertices.put(v);
+                vertices.put((float) u);
+                vertices.put((float) v);
 
                 x = (float) (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
                 y = (float) (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
                 z = (float) (R * Math.cos((b) / 180 * Math.PI));
-                vertices.put(x - H);
-                vertices.put(y + K);
-                vertices.put(z - Z);
+                vertices.put((float) (x - H));
+                vertices.put((float) (y + K));
+                vertices.put((float) (z - Z));
 
-                u = (float) (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
+                u = (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4;
                 v = (y + 1) / 2;
-                vertices.put(u);
-                vertices.put(v);
+                vertices.put((float) u);
+                vertices.put((float) v);
 
-                x = (float) (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
-                y = (float) (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
-                z = (float) (R * Math.cos((b + space) / 180 * Math.PI));
-                vertices.put(x - H);
-                vertices.put(y + K);
-                vertices.put(z - Z);
+                x = (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                y = (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                z = (R * Math.cos((b + space) / 180 * Math.PI));
+                vertices.put((float) (x - H));
+                vertices.put((float) (y + K));
+                vertices.put((float) (z - Z));
 
-                u = (float) (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
+                u = (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4;
                 v = (y + 1) / 2;
-                vertices.put(u);
-                vertices.put(v);
+                vertices.put((float) u);
+                vertices.put((float) v);
+            }
+        }
+
+
+        // Degenerate connecting triangle start
+        vertices.put((float) (x - H));
+        vertices.put((float) (y + K));
+        vertices.put((float) (z - Z));
+        vertices.put((float) u);
+        vertices.put((float) v);
+
+
+        boolean first = true;
+        for (double b = 90; b >= space; b -= space) {
+            for (double a = 0; a <= 360 - space; a += space) {
+
+                x = (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                y = (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                z = (R * Math.cos((b) / 180 * Math.PI));
+                vertices.put((float) (x - H));
+                vertices.put((float) (y + K));
+                vertices.put((float) (z - Z));
+
+                u = -(Math.atan2(x,z + epsilon) / (Math.PI / 2));
+                u = (u + 1) / 4 + 0.5f;
+                v = (y + 1) / 2;
+                vertices.put((float) u);
+                vertices.put((float) v);
+
+                // To close degenerate connecting triangle
+                if (first) {
+                    vertices.put((float) (x - H));
+                    vertices.put((float) (y + K));
+                    vertices.put((float) (z - Z));
+                    vertices.put((float) u);
+                    vertices.put((float) v);
+
+                    vertices.put((float) (x - H));
+                    vertices.put((float) (y + K));
+                    vertices.put((float) (z - Z));
+                    vertices.put((float) u);
+                    vertices.put((float) v);
+                    first = false;
+
+                }
+
+                x = (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
+                y = (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
+                z = (R * Math.cos((b - space) / 180 * Math.PI));
+                vertices.put((float) (x - H));
+                vertices.put((float) (y + K));
+                vertices.put((float) (z - Z));
+
+                u = (float) -(Math.atan2(x,z + epsilon) / (Math.PI / 2));
+                u = (u + 1) / 4 + 0.5f;
+                v = (y + 1) / 2;
+                vertices.put((float) u);
+                vertices.put((float) v);
+
+                x = (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                y = (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                z = (R * Math.cos((b) / 180 * Math.PI));
+                vertices.put((float) (x - H));
+                vertices.put((float) (y + K));
+                vertices.put((float) (z - Z));
+
+                u = (float) -(Math.atan2(x,z + epsilon) / (Math.PI / 2));
+                u = (u + 1) / 4 + 0.5f;
+                v = (y + 1) / 2;
+                vertices.put((float) u);
+                vertices.put((float) v);
+
+                x = (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
+                y = (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
+                z = (R * Math.cos((b - space) / 180 * Math.PI));
+                vertices.put((float) (x - H));
+                vertices.put((float) (y + K));
+                vertices.put((float) (z - Z));
+
+                u = (float) -(Math.atan2(x,z + epsilon) / (Math.PI / 2));
+                u = (u + 1) / 4 + 0.5f;
+                v = (y + 1) / 2;
+                vertices.put((float) u);
+                vertices.put((float) v);
             }
         }
 
