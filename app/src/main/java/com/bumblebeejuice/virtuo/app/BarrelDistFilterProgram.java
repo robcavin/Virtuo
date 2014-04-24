@@ -26,6 +26,8 @@ public class BarrelDistFilterProgram extends LTFilterProgram {
     private static enum State {LEFT, RIGHT};
     private State state;
 
+    public static final float scale = 1.25f;
+
     public BarrelDistFilterProgram(float[] lensCenter, float[] screenCenter, float[] scale, float[] scaleIn, float[] hmdWarp) {
         LensCenter = lensCenter;
         ScreenCenter = screenCenter;
@@ -108,7 +110,7 @@ public class BarrelDistFilterProgram extends LTFilterProgram {
     public void draw(float[] mMVPMatrix, float[] mSTMatrix) {
 
         float[] modifiedMatrix = mMVPMatrix.clone();
-        Matrix.scaleM(modifiedMatrix,0, 1.25f, 1.25f, 1.0f);
+        Matrix.scaleM(modifiedMatrix,0, scale, scale, 1.0f);
 
         GLES20.glViewport(0,0,width/2,height);
         state = State.LEFT;

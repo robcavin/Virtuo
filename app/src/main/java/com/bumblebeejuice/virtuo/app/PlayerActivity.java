@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.WindowManager;
 
 import java.nio.ByteBuffer;
 
@@ -37,6 +38,7 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
     private LTRenderer renderer;
     private Surface rendererSurface;
 
+    private Point intermediateRenderSize;
     private LTRenderer barrelRenderer;
 
     private MediaExtractor extractor;
@@ -116,12 +118,16 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
                 playMovie();
             }
         }
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         sensorManager.unregisterListener(this);
+
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         tearDown();
     }
@@ -253,7 +259,15 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
     protected void playMovie() {
 
         renderer = new LTRenderer();
-        renderer.createOutputSurface(textureViewSurfaceSize.x/2, textureViewSurfaceSize.y);
+
+        // The intermediate render surface is larger than the final target to account for the
+        //  resolution lost during barrel distortion
+        intermediateRenderSize = new Point(
+                (int) (textureViewSurfaceSize.x/2 * BarrelDistFilterProgram.scale),
+                (int) (textureViewSurfaceSize.y * BarrelDistFilterProgram.scale));
+
+        renderer.createOutputSurface(intermediateRenderSize.x, intermediateRenderSize.y);
+
         renderer.getInputSurfaceTexture(new LTRenderer.OnSurfaceTextureAvailableListener() {
             @Override
             public void surfaceTextureAvailable(SurfaceTexture surfaceTexture, int surfaceTextureId) {
@@ -303,7 +317,7 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
         renderer.getOutputSurfaceTexture(new LTRenderer.OnSurfaceTextureAvailableListener() {
             @Override
             public void surfaceTextureAvailable(SurfaceTexture surfaceTexture, int surfaceTextureId) {
-                barrelRenderer.setInputSurfaceTextureAndId(surfaceTexture,surfaceTextureId);
+                barrelRenderer.setInputSurfaceTextureAndId(surfaceTexture, surfaceTextureId);
 
                 float[] LensCenter = {0.5f, 0.5f, 0.5f, 0.5f};   // Since we duplicate the same input twice,
                 float[] ScreenCenter = {0.5f, 0.5f, 0.5f, 0.5f}; //  the left and right parameters are the same
@@ -314,6 +328,11 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
                 BarrelDistFilterProgram barrelFilter = new BarrelDistFilterProgram(
                         LensCenter, ScreenCenter, Scale, ScaleIn, HmdWarp
                 );
+
+                barrelRenderer.setTextureScaleAndCrop(
+                        new Point(textureViewSurfaceSize.x/2, textureViewSurfaceSize.y),
+                        intermediateRenderSize,
+                        1.0f);
 
                 barrelRenderer.setFilterProgram(barrelFilter);
                 barrelRenderer.setIgnoreInputSurfaceTexMatrix(true);
@@ -339,7 +358,7 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
             MediaFormat format = extractor.getTrackFormat(0);
             decoder = MediaCodec.createDecoderByType(format.getString(MediaFormat.KEY_MIME));
 
-            renderer.setTextureScaleAndCrop(textureViewSurfaceSize, new Point(format.getInteger("width") / 2, format.getInteger("height")), 2);
+            renderer.setTextureScaleAndCrop(intermediateRenderSize, new Point(format.getInteger("width") / 2, format.getInteger("height")), 2);
             decoder.configure(format, rendererSurface, null, 0);
             decoder.start();
 
