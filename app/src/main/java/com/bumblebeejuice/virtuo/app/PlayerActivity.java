@@ -265,6 +265,16 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
                 });
                 rendererSurface = new Surface(surfaceTexture);
 
+                //sphereFilterProgram = new LTSphereFilterProgram();
+                /*float[] LensCenter = {0.25f, 0.5f};
+                float[] ScreenCenter = {0.25f, 0.5f};
+                float[] Scale = {1.0f, 1.0f};
+                float[] ScaleIn = {1.0f, 1.0f};
+                float[] HmdWarp = {1.0f, 0.22f, 0.24f, 0.0f};
+
+                sphereFilterProgram = new BarrelShiftFilterProgram(
+                        LensCenter, ScreenCenter, Scale, ScaleIn, HmdWarp
+                );*/
                 sphereFilterProgram = new LTSphereFilterProgram();
                 renderer.setFilterProgram(sphereFilterProgram);
 

@@ -119,12 +119,15 @@ public class LTRenderer {
         });
     }
 
-
     public void runOnGLThread(final Runnable runnable) {
         renderThread.handler.post(new Runnable() {
             @Override
             public void run() {
-                renderThread.makeCurrent(_mEGLSurface);
+                Point sizeUpdate = renderThread.makeCurrent(_mEGLSurface);
+                if (sizeUpdate != null) {
+                    _outputSurfaceWidth = sizeUpdate.x;
+                    _outputSurfaceHeight = sizeUpdate.y;
+                }
                 runnable.run();
             }
         });
@@ -315,6 +318,7 @@ public class LTRenderer {
                         onFrameRenderListener.texImageChanged(LTRenderer.this);
                     }
 
+                    _filterProgram.setViewport(_outputSurfaceWidth,_outputSurfaceHeight);
                     _filterProgram.draw(_projMatrix, _texCoordMatrix);
 
                     boolean doSwap = true;

@@ -1,5 +1,6 @@
 package com.bumblebeejuice.virtuo.app;
 
+import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import java.nio.ByteBuffer;
@@ -210,5 +211,10 @@ public class LTSphereFilterProgram extends LTFilterProgram {
         Matrix.multiplyMM(rotatedMatrix, 0, mMVPMatrix, 0, rotationMatrix, 0);
 
         super.updateUniforms(rotatedMatrix, mSTMatrix);
+    }
+
+    @Override
+    protected int getPrimitiveType() {
+        return GLES20.GL_TRIANGLE_STRIP;
     }
 }

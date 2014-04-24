@@ -215,6 +215,14 @@ public class LTFilterProgram {
     }
 
 
+    public void setViewport(int width, int height) {
+        GLES20.glViewport(0, 0, width, height);
+    }
+
+    protected int getPrimitiveType() {
+        return GLES20.GL_TRIANGLES;
+    }
+
     // MAIN DRAW LOOP
     public void draw(float[] mMVPMatrix, float[] mSTMatrix) {
 
@@ -241,7 +249,7 @@ public class LTFilterProgram {
 
         GLES20.glEnable(GLES20.GL_CULL_FACE);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, mTriangleVertices.capacity() / 5);
+        GLES20.glDrawArrays(getPrimitiveType(), 0, mTriangleVertices.capacity() / 5);
         checkGlError("glDrawArrays");
     }
 

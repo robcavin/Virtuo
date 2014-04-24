@@ -1,5 +1,6 @@
 package com.bumblebeejuice.virtuo.app;
 
+import android.graphics.Point;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
@@ -92,7 +93,8 @@ public class LTRenderThread extends Thread {
         }
     }
 
-    public void makeCurrent(EGLSurface surface) {
+    public Point makeCurrent(EGLSurface surface) {
+        Point sizeUpdate = null;
         if (!mEglContext.equals(EGL14.eglGetCurrentContext()) ||
                 !surface.equals(EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW))) {
             if (!EGL14.eglMakeCurrent(mEglDisplay, surface, surface, mEglContext)) {
@@ -104,8 +106,9 @@ public class LTRenderThread extends Thread {
             int height[] = new int[1];
             EGL14.eglQuerySurface(mEglDisplay,surface,EGL14.EGL_WIDTH,width,0);
             EGL14.eglQuerySurface(mEglDisplay,surface,EGL14.EGL_HEIGHT,height,0);
-            GLES20.glViewport(0,0,width[0],height[0]);
+            sizeUpdate = new Point(width[0],height[0]);
         }
+        return sizeUpdate;
     }
 
     EGLContext createContext(EGLDisplay eglDisplay, EGLConfig eglConfig) {
