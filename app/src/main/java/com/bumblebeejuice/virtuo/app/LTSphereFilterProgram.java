@@ -196,18 +196,6 @@ public class LTSphereFilterProgram extends LTFilterProgram {
     @Override
     protected void updateUniforms(float[] mMVPMatrix, float[] mSTMatrix) {
 
-        /*float rotation = 0;
-        long now = System.nanoTime();
-
-        if (startAnimationTime != 0) {
-            double delta = (now - startAnimationTime) / 1000000000.0;
-            rotation = (float) Math.sin(2 * Math.PI * delta);
-        } else {
-            startAnimationTime = now;
-        }
-
-        Matrix.setRotateM(rotationMatrix, 0, rotation * 10, 0, 1, 0);*/
-
         Matrix.multiplyMM(rotatedMatrix, 0, mMVPMatrix, 0, rotationMatrix, 0);
 
         super.updateUniforms(rotatedMatrix, mSTMatrix);
@@ -217,4 +205,6 @@ public class LTSphereFilterProgram extends LTFilterProgram {
     protected int getPrimitiveType() {
         return GLES20.GL_TRIANGLE_STRIP;
     }
+
+
 }

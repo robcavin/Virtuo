@@ -37,6 +37,8 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
     private LTRenderer renderer;
     private Surface rendererSurface;
 
+    private LTRenderer barrelRenderer;
+
     private MediaExtractor extractor;
     private MediaCodec decoder;
 
@@ -107,7 +109,7 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
     @Override
     protected void onResume() {
         super.onResume();
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         synchronized (textureViewSurfaceAvailableSync) {
             if (textureViewSurface != null) {
@@ -251,7 +253,7 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
     protected void playMovie() {
 
         renderer = new LTRenderer();
-        renderer.setOutputSurface(textureViewSurface);
+        renderer.createOutputSurface(textureViewSurfaceSize.x/2, textureViewSurfaceSize.y);
         renderer.getInputSurfaceTexture(new LTRenderer.OnSurfaceTextureAvailableListener() {
             @Override
             public void surfaceTextureAvailable(SurfaceTexture surfaceTexture, int surfaceTextureId) {
@@ -265,16 +267,6 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
                 });
                 rendererSurface = new Surface(surfaceTexture);
 
-                //sphereFilterProgram = new LTSphereFilterProgram();
-                /*float[] LensCenter = {0.25f, 0.5f};
-                float[] ScreenCenter = {0.25f, 0.5f};
-                float[] Scale = {1.0f, 1.0f};
-                float[] ScaleIn = {1.0f, 1.0f};
-                float[] HmdWarp = {1.0f, 0.22f, 0.24f, 0.0f};
-
-                sphereFilterProgram = new BarrelShiftFilterProgram(
-                        LensCenter, ScreenCenter, Scale, ScaleIn, HmdWarp
-                );*/
                 sphereFilterProgram = new LTSphereFilterProgram();
                 renderer.setFilterProgram(sphereFilterProgram);
 
@@ -296,7 +288,7 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
 
             @Override
             public void frameRendered(LTRenderer renderer, long timeNs) {
-
+                barrelRenderer.renderOnce();
             }
 
             @Override
@@ -304,6 +296,30 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
 
             }
         });
+
+
+        barrelRenderer = new LTRenderer();
+        barrelRenderer.setOutputSurface(textureViewSurface);
+        renderer.getOutputSurfaceTexture(new LTRenderer.OnSurfaceTextureAvailableListener() {
+            @Override
+            public void surfaceTextureAvailable(SurfaceTexture surfaceTexture, int surfaceTextureId) {
+                barrelRenderer.setInputSurfaceTextureAndId(surfaceTexture,surfaceTextureId);
+
+                float[] LensCenter = {0.5f, 0.5f, 0.5f, 0.5f};   // Since we duplicate the same input twice,
+                float[] ScreenCenter = {0.5f, 0.5f, 0.5f, 0.5f}; //  the left and right parameters are the same
+                float[] Scale = {0.5f, 0.5f};  // Takes the range -1,1 back to 0,1
+                float[] ScaleIn = {2.0f, 2.0f}; // Takes the range 0,1 to -1,1
+                float[] HmdWarp = {1.0f, 0.22f, 0.24f, 0.0f};
+
+                BarrelDistFilterProgram barrelFilter = new BarrelDistFilterProgram(
+                        LensCenter, ScreenCenter, Scale, ScaleIn, HmdWarp
+                );
+
+                barrelRenderer.setFilterProgram(barrelFilter);
+                barrelRenderer.setIgnoreInputSurfaceTexMatrix(true);
+            }
+        });
+
     }
 
 

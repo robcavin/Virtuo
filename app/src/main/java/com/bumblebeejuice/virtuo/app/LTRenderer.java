@@ -96,16 +96,40 @@ public class LTRenderer {
             @Override
             public void run() {
                 _outputSurfaceTextureId = createTextureForSurface();
+
                 _outputSurfaceTexture = new SurfaceTexture(_outputSurfaceTextureId);
                 _outputSurfaceTexture.setDefaultBufferSize(width,height);
-
                 _outputSurfaceWidth = width;
                 _outputSurfaceHeight = height;
 
                 if (_mEGLSurface != null) renderThread.deleteOutputSurface(_mEGLSurface);
                 _mEGLSurface = renderThread.createOutputSurface(_outputSurfaceTexture);
+
+                _outputSurfaceTexture.detachFromGLContext();
+
+                renderThread.makeCurrent(_mEGLSurface);
+
+                _outputSurfaceTexture.attachToGLContext(1);
+                _outputSurfaceTextureId = 1;
             }
         });
+    }
+
+    public void getOutputSurfaceTexture(final OnSurfaceTextureAvailableListener onSurfaceTextureAvailableListener) {
+
+        if (_outputSurfaceTexture != null && _outputSurfaceTextureId != 0) {
+            onSurfaceTextureAvailableListener.surfaceTextureAvailable(_outputSurfaceTexture, _outputSurfaceTextureId);
+
+        } else {
+            runOnGLThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (_outputSurfaceTexture != null && _outputSurfaceTextureId >= 0) {
+                        onSurfaceTextureAvailableListener.surfaceTextureAvailable(_outputSurfaceTexture, _outputSurfaceTextureId);
+                    }
+                }
+            });
+        }
     }
 
 
@@ -299,8 +323,6 @@ public class LTRenderer {
             setRenderPass(new Runnable() {
                 @Override
                 public void run() {
-                    GLES20.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-                    GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
                     long timeNs = -1L;
                     if (_inputSurfaceTexture != null) {

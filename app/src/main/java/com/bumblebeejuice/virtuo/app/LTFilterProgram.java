@@ -219,12 +219,19 @@ public class LTFilterProgram {
         GLES20.glViewport(0, 0, width, height);
     }
 
+    protected void clearRenderTargetBuffers() {
+        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
+    }
+
     protected int getPrimitiveType() {
         return GLES20.GL_TRIANGLES;
     }
 
+
     // MAIN DRAW LOOP
     public void draw(float[] mMVPMatrix, float[] mSTMatrix) {
+
+        clearRenderTargetBuffers();
 
         GLES20.glUseProgram(mProgram);
         checkGlError("glUseProgram");
