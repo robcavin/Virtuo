@@ -109,16 +109,24 @@ public class BarrelDistFilterProgram extends LTFilterProgram {
     // MAIN DRAW LOOP
     public void draw(float[] mMVPMatrix, float[] mSTMatrix) {
 
-        float[] modifiedMatrix = mMVPMatrix.clone();
-        Matrix.scaleM(modifiedMatrix,0, scale, scale, 1.0f);
+        // Scale the projection matrix to fill the screen
+        float[] modifiedProjection = mMVPMatrix.clone();
+        Matrix.scaleM(modifiedProjection,0,scale,scale,1);
+
+        // Maybe not the best way to do this
+        // Need to get the tex coordinates in the range 0-0.5 and 0.5-1
+        // Could maybe have just scaled the projection matrix in x by 2 and then
+        // shifted once
+        float[] modifiedMatrix = mSTMatrix.clone();
+        Matrix.scaleM(modifiedMatrix,0,0.5f,1,1);
 
         GLES20.glViewport(0,0,width/2,height);
         state = State.LEFT;
-        super.draw(modifiedMatrix,mSTMatrix);
+        super.draw(modifiedProjection,modifiedMatrix);
 
-        //Matrix.translateM(modifiedMatrix, 0, 2.0f, 0, 0);
+        Matrix.translateM(modifiedMatrix, 0, 1.0f, 0, 0);
         GLES20.glViewport(width/2,0,width/2,height);
         state = State.RIGHT;
-        super.draw(modifiedMatrix,mSTMatrix);
+        super.draw(modifiedProjection,modifiedMatrix);
     }
 }

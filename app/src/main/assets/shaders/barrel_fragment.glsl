@@ -23,10 +23,7 @@ void main()
 {
     vec2 tc = HmdWarp(vTextureCoord);
 
-    // RDC - since the input surface is only half width and we repeat that twice, we map the input
-    // texture coord range to the full [0,1] rather than [0,0.5], [0.5,1]
-    //if (!all(equal(clamp(tc, ScreenCenter-vec2(0.25,0.5), ScreenCenter+vec2(0.25,0.5)), tc)))
-    if (!all(equal(clamp(tc, ScreenCenter-vec2(0.5,0.5), ScreenCenter+vec2(0.5,0.5)), tc)))
+    if (!all(equal(clamp(tc, ScreenCenter-vec2(0.25,0.5), ScreenCenter+vec2(0.25,0.5)), tc)))
         gl_FragColor = vec4(0);
     else
         gl_FragColor = texture2D(sTexture, tc);

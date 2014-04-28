@@ -266,7 +266,8 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
                 (int) (textureViewSurfaceSize.x/2 * BarrelDistFilterProgram.scale),
                 (int) (textureViewSurfaceSize.y * BarrelDistFilterProgram.scale));
 
-        renderer.createOutputSurface(intermediateRenderSize.x, intermediateRenderSize.y);
+        //renderer.setOutputSurface(textureViewSurface);
+        renderer.createOutputSurface(intermediateRenderSize.x * 2, intermediateRenderSize.y);
 
         renderer.getInputSurfaceTexture(new LTRenderer.OnSurfaceTextureAvailableListener() {
             @Override
@@ -319,16 +320,17 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
             public void surfaceTextureAvailable(SurfaceTexture surfaceTexture, int surfaceTextureId) {
                 barrelRenderer.setInputSurfaceTextureAndId(surfaceTexture, surfaceTextureId);
 
-                float[] LensCenter = {0.5f, 0.5f, 0.5f, 0.5f};   // Since we duplicate the same input twice,
-                float[] ScreenCenter = {0.5f, 0.5f, 0.5f, 0.5f}; //  the left and right parameters are the same
-                float[] Scale = {0.5f, 0.5f};  // Takes the range -1,1 back to 0,1
-                float[] ScaleIn = {2.0f, 2.0f}; // Takes the range 0,1 to -1,1
+                float[] LensCenter = {0.25f, 0.5f, 0.75f, 0.5f};   // Since we duplicate the same input twice,
+                float[] ScreenCenter = {0.25f, 0.5f, 0.75f, 0.5f}; //  the left and right parameters are the same
+                float[] Scale = {0.25f, 0.5f};  // Takes the range -1,1 back to 0,1
+                float[] ScaleIn = {4.0f, 2.0f}; // Takes the range 0,1 to -1,1
                 float[] HmdWarp = {1.0f, 0.22f, 0.24f, 0.0f};
 
                 BarrelDistFilterProgram barrelFilter = new BarrelDistFilterProgram(
                         LensCenter, ScreenCenter, Scale, ScaleIn, HmdWarp
                 );
 
+                barrelRenderer.setIgnoreInputSurfaceTexMatrix(true);
                 barrelRenderer.setTextureScaleAndCrop(
                         new Point(textureViewSurfaceSize.x/2, textureViewSurfaceSize.y),
                         intermediateRenderSize,
@@ -338,7 +340,6 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
                 barrelRenderer.setIgnoreInputSurfaceTexMatrix(true);
             }
         });
-
     }
 
 
@@ -358,7 +359,11 @@ public class PlayerActivity extends Activity implements SensorEventListener, Tex
             MediaFormat format = extractor.getTrackFormat(0);
             decoder = MediaCodec.createDecoderByType(format.getString(MediaFormat.KEY_MIME));
 
-            renderer.setTextureScaleAndCrop(intermediateRenderSize, new Point(format.getInteger("width") / 2, format.getInteger("height")), 2);
+            renderer.setTextureScaleAndCrop(
+                    intermediateRenderSize,
+                    new Point(format.getInteger("width") / 2, format.getInteger("height")),
+                    2);
+
             decoder.configure(format, rendererSurface, null, 0);
             decoder.start();
 

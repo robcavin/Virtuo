@@ -16,10 +16,36 @@ public class LTSphereFilterProgram extends LTFilterProgram {
     private float[] rotationMatrix = new float[16];
     private float[] rotatedMatrix = new float[16];
 
+    private int width;
+    private int height;
+
+    private static enum State {LEFT, RIGHT};
+    private State state;
+
+    private float[] projLeft = new float[16];
+    private float[] projRight = new float[16];
+
     @Override
     public void init(int inputSurfaceTextureId, boolean inputSurfaceIsExternal) {
         super.init(inputSurfaceTextureId, inputSurfaceIsExternal);
         Matrix.setIdentityM(rotationMatrix,0);
+
+        // Oculus defaults
+        //float fov = (float) (2.0 * Math.atan2(0.09356/2, 0.041));
+        //float aspectRatio = 640.0f / 800.0f;
+
+        float viewCenter = 0.14976f * 0.25f;
+        float eyeProjectionShift = viewCenter - 0.0635f*0.5f;
+        float projectionCenterOffset = 4.0f * eyeProjectionShift / 0.14976f;
+
+        //float[] perspectiveMatrix = new float[16];
+        //Matrix.perspectiveM(perspectiveMatrix,0,fov,aspectRatio,0.0001f,1000.0f);
+        //Matrix.translateM(projLeft,0,perspectiveMatrix,0,projectionCenterOffset,0,0);
+        //Matrix.translateM(projRight,0,perspectiveMatrix,0,projectionCenterOffset,0,0);
+        float[] identity = new float[16];
+        Matrix.setIdentityM(identity,0);
+        Matrix.translateM(projLeft,0,identity,0,projectionCenterOffset,0,0);
+        Matrix.translateM(projRight,0,identity,0,-projectionCenterOffset,0,0);
     }
 
     @Override
@@ -45,12 +71,12 @@ public class LTSphereFilterProgram extends LTFilterProgram {
             for (double a = 0; a <= 360 - space; a += space) {
 
 
-                x = (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                y = (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                z = (R * Math.cos((b) / 180 * Math.PI));
-                vertices.put((float) (x - H));
-                vertices.put((float) (y + K));
-                vertices.put((float) (z - Z));
+                x = (Math.sin((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                y = (Math.cos((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                z = (Math.cos((b) / 180 * Math.PI));
+                vertices.put((float) (R*x - H));
+                vertices.put((float) (R*y + K));
+                vertices.put((float) (R*z - Z));
 
                 u = (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4;
@@ -58,12 +84,12 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 vertices.put((float) u);
                 vertices.put((float) v);
 
-                x = (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
-                y = (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
-                z = (R * Math.cos((b + space) / 180 * Math.PI));
-                vertices.put((float) (x - H));
-                vertices.put((float) (y + K));
-                vertices.put((float) (z - Z));
+                x = (Math.sin((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                y = (Math.cos((a) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                z = (Math.cos((b + space) / 180 * Math.PI));
+                vertices.put((float) (R*x - H));
+                vertices.put((float) (R*y + K));
+                vertices.put((float) (R*z - Z));
 
                 u = (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4;
@@ -71,12 +97,12 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 vertices.put((float) u);
                 vertices.put((float) v);
 
-                x = (float) (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                y = (float) (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                z = (float) (R * Math.cos((b) / 180 * Math.PI));
-                vertices.put((float) (x - H));
-                vertices.put((float) (y + K));
-                vertices.put((float) (z - Z));
+                x = (float) (Math.sin((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                y = (float) (Math.cos((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                z = (float) (Math.cos((b) / 180 * Math.PI));
+                vertices.put((float) (R*x - H));
+                vertices.put((float) (R*y + K));
+                vertices.put((float) (R*z - Z));
 
                 u = (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4;
@@ -84,12 +110,12 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 vertices.put((float) u);
                 vertices.put((float) v);
 
-                x = (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
-                y = (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
-                z = (R * Math.cos((b + space) / 180 * Math.PI));
-                vertices.put((float) (x - H));
-                vertices.put((float) (y + K));
-                vertices.put((float) (z - Z));
+                x = (Math.sin((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                y = (Math.cos((a + space) / 180 * Math.PI) * Math.sin((b + space) / 180 * Math.PI));
+                z = (Math.cos((b + space) / 180 * Math.PI));
+                vertices.put((float) (R*x - H));
+                vertices.put((float) (R*y + K));
+                vertices.put((float) (R*z - Z));
 
                 u = (Math.atan2(x,-z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4;
@@ -115,12 +141,12 @@ public class LTSphereFilterProgram extends LTFilterProgram {
         for (double b = 90; b >= space; b -= space) {
             for (double a = 0; a <= 360 - space; a += space) {
 
-                x = (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                y = (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                z = (R * Math.cos((b) / 180 * Math.PI));
-                vertices.put((float) (x - H));
-                vertices.put((float) (y + K));
-                vertices.put((float) (z - Z));
+                x = (Math.sin((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                y = (Math.cos((a) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                z = (Math.cos((b) / 180 * Math.PI));
+                vertices.put((float) (R*x - H));
+                vertices.put((float) (R*y + K));
+                vertices.put((float) (R*z - Z));
 
                 u = -(Math.atan2(x,z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4 + 0.5f;
@@ -145,12 +171,12 @@ public class LTSphereFilterProgram extends LTFilterProgram {
 
                 }
 
-                x = (R * Math.sin((a) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
-                y = (R * Math.cos((a) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
-                z = (R * Math.cos((b - space) / 180 * Math.PI));
-                vertices.put((float) (x - H));
-                vertices.put((float) (y + K));
-                vertices.put((float) (z - Z));
+                x = (Math.sin((a) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
+                y = (Math.cos((a) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
+                z = (Math.cos((b - space) / 180 * Math.PI));
+                vertices.put((float) (R*x - H));
+                vertices.put((float) (R*y + K));
+                vertices.put((float) (R*z - Z));
 
                 u = (float) -(Math.atan2(x,z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4 + 0.5f;
@@ -158,12 +184,12 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 vertices.put((float) u);
                 vertices.put((float) v);
 
-                x = (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                y = (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
-                z = (R * Math.cos((b) / 180 * Math.PI));
-                vertices.put((float) (x - H));
-                vertices.put((float) (y + K));
-                vertices.put((float) (z - Z));
+                x = (Math.sin((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                y = (Math.cos((a + space) / 180 * Math.PI) * Math.sin((b) / 180 * Math.PI));
+                z = (Math.cos((b) / 180 * Math.PI));
+                vertices.put((float) (R*x - H));
+                vertices.put((float) (R*y + K));
+                vertices.put((float) (R*z - Z));
 
                 u = (float) -(Math.atan2(x,z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4 + 0.5f;
@@ -171,12 +197,12 @@ public class LTSphereFilterProgram extends LTFilterProgram {
                 vertices.put((float) u);
                 vertices.put((float) v);
 
-                x = (R * Math.sin((a + space) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
-                y = (R * Math.cos((a + space) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
-                z = (R * Math.cos((b - space) / 180 * Math.PI));
-                vertices.put((float) (x - H));
-                vertices.put((float) (y + K));
-                vertices.put((float) (z - Z));
+                x = (Math.sin((a + space) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
+                y = (Math.cos((a + space) / 180 * Math.PI) * Math.sin((b - space) / 180 * Math.PI));
+                z = (Math.cos((b - space) / 180 * Math.PI));
+                vertices.put((float) (R*x - H));
+                vertices.put((float) (R*y + K));
+                vertices.put((float) (R*z - Z));
 
                 u = (float) -(Math.atan2(x,z + epsilon) / (Math.PI / 2));
                 u = (u + 1) / 4 + 0.5f;
@@ -204,6 +230,28 @@ public class LTSphereFilterProgram extends LTFilterProgram {
     @Override
     protected int getPrimitiveType() {
         return GLES20.GL_TRIANGLE_STRIP;
+    }
+
+    @Override
+    public void setViewport(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    public void draw(float[] mMVPMatrix, float[] mSTMatrix) {
+
+        float[] tmpMatrix = new float[16];
+        Matrix.multiplyMM(tmpMatrix,0,projLeft,0,mMVPMatrix,0);
+        GLES20.glViewport(0,0,width/2,height);
+        state = State.LEFT;
+        super.draw(tmpMatrix,mSTMatrix);
+
+        //Matrix.translateM(modifiedMatrix, 0, 2.0f, 0, 0);
+        Matrix.multiplyMM(tmpMatrix,0,projRight,0,mMVPMatrix,0);
+        GLES20.glViewport(width/2,0,width/2,height);
+        state = State.RIGHT;
+        super.draw(tmpMatrix,mSTMatrix);
     }
 
 
